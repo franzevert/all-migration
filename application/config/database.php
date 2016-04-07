@@ -73,6 +73,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $active_group = 'default';
 $query_builder = TRUE;
 
+//define connection to the new wordpress database - Fish In a Bottle DB
 $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => 'localhost',
@@ -95,6 +96,67 @@ $db['default'] = array(
 	'save_queries' => TRUE
 );
 
+
+//define connection to the new wordpress database - TARGET
+
+/** The name of the database for WordPress */
+//define('DB_NAME', 'alllangu1_cbkw');
+
+/** MySQL database username */
+//define('DB_USER', 'alllangu1_cbkw');
+
+/** MySQL database password */
+//define('DB_PASSWORD', 'tb3l7hngh224vlsy');
+
+
+$db['wordpress'] = array(
+	'dsn'	=> '',
+	'hostname' => 'localhost',
+	'username' => 'alllangu1_cbkw',
+	'password' => 'tb3l7hngh224vlsy',
+	'database' => 'alllangu1_cbkw',
+	'dbdriver' => 'mysqli',
+	'dbprefix' => 'cwvl_',
+	'pconnect' => FALSE,
+	'db_debug' => (ENVIRONMENT !== 'production'),
+	'cache_on' => FALSE,
+	'cachedir' => '',
+	'char_set' => 'utf8',
+	'dbcollat' => 'utf8_general_ci',
+	'swap_pre' => '',
+	'encrypt' => FALSE,
+	'compress' => FALSE,
+	'stricton' => FALSE,
+	'failover' => array(),
+	'save_queries' => TRUE
+);
+
+
+
+/*//define connection to the new wordpress database
+$db['wordpress'] = array(
+	'dsn'	=> '',
+	'hostname' => 'localhost',
+	'username' => 'all-user',
+	'password' => 'YBcPbN35SHW5Fu8N',
+	'database' => 'all_wp2',
+	'dbdriver' => 'mysqli',
+	'dbprefix' => 'cwvl_',
+	'pconnect' => FALSE,
+	'db_debug' => (ENVIRONMENT !== 'production'),
+	'cache_on' => FALSE,
+	'cachedir' => '',
+	'char_set' => 'utf8',
+	'dbcollat' => 'utf8_general_ci',
+	'swap_pre' => '',
+	'encrypt' => FALSE,
+	'compress' => FALSE,
+	'stricton' => FALSE,
+	'failover' => array(),
+	'save_queries' => TRUE
+);*/
+
+/*
 //define connection to the new wordpress database
 $db['wordpress'] = array(
 	'dsn'	=> '',
@@ -116,4 +178,4 @@ $db['wordpress'] = array(
 	'stricton' => FALSE,
 	'failover' => array(),
 	'save_queries' => TRUE
-);
+);*/

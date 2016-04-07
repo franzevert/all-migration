@@ -71,9 +71,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	<h1>Welcome to CodeIgniter!</h1>
 
 	<div id="body">
-		<a href="<?=site_url('migrate/news_articles');?>">Start news articles data migration</a><br>
+		<a href="<?=site_url('migrate/news_articles2');?>">Start news articles data migration</a><br>
 		<a href="<?=site_url('migrate/events');?>">Start events data migration</a>
+    <br>
+        <a href="http://localhost/all-wordpress">See results in local WP</a>
 	</div>
+
+
+
 
 	<p class="footer">Page rendered in <strong>{elapsed_time}</strong> seconds. <?php echo  (ENVIRONMENT === 'development') ?  'CodeIgniter Version <strong>' . CI_VERSION . '</strong>' : '' ?></p>
 </div>

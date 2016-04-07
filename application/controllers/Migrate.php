@@ -27,7 +27,24 @@ class Migrate extends CI_Controller
      *
      * - This then needs to be inserted as a wordpress post with associated tags saying it's a news article?
      */
-    function news_articles()
+
+    /**************************************************
+     *
+     * Grab content from navigation table
+     * select id, title, root_id, url, published, created from navigation where parent_id = 39 and visible=1 and expired IS NULL and deleted IS NULL and url !="" and root_id = id and published ORDER BY `id` ASC
+     *
+     * use the id (or root_id) from these records to go to the content and content_blocks tables (navigation.root_id = content.navigation_id)
+     * then use content.id = content_blocks.content_id
+     *
+     *  So if the root_id in first query is 40...
+     *
+     *  select * from content c, content_blocks cb
+     *  where c.id = cb.content_id
+     *  and c.id = 40
+     *
+     */
+
+    function news_articles2()
     {
         echo "<ul>";
         echo "<li>Starting news articles data migration</li>";
@@ -36,60 +53,46 @@ class Migrate extends CI_Controller
 
         $content = $this->data_model->get_news();
 
-        //log_message("debug", $this->db->last_query());
+        echo  "<li>Found " . $content->num_rows() . " Rows </li>";
 
-        log_message("debug", "Found " . $content->num_rows() . " Rows ");
-
-        // the main record we need the latest version only
         foreach ($content->result() as $row) {
-
-            //echo "<PRE>", print_r($row);
 
             $content_id = $row->id;
             $title = $row->title;
-            $version = $row->version;
+            $post_date = $row->published;
 
-            echo "<li>...latest version of '" . $title . "' is " . $version . "</li>";
+            $post_name = str_replace("_", "-", substr($row->url, 15)); //remove the news/news-list/
 
-            //Fetch heading
-            $heading = $this->data_model->get_content_blocks($content_id, "heading");
+            echo '<li>Processing data for... <a href="http://all-languages.org.uk/' . $row->url . '">'.$title.'</a></li>';
 
-            //there might not always be one as the content in this table is mixed. If there's no matching heading, skip
-            if ($heading->num_rows() > 0) {
-                $heading_row = $heading->result();
-                $post_title = $heading_row[0]->value;
-            }
+            //Fetch content for this article
+            $article_heading = $this->data_model->get_content_for_id($content_id, "heading");
+            $article_heading_row =  $article_heading->result();
+            $article_heading = $article_heading_row[0]->value;
 
-            $heading->free_result();
+            //echo $this->db->last_query();
+            //echo "<PRE>", print_r($article_heading_row);
 
-            //Display date
-            $display_date = $this->data_model->get_content_blocks($content_id, "display_date");
+            $article_content = $this->data_model->get_content_for_id($content_id, "content");
+            $article_content_row =  $article_content->result();
+            $article_content = $article_content_row[0]->value;
 
-            if ($display_date->num_rows() > 0) {
-                $display_date_row = $display_date->result();
-                $post_date = $display_date_row[0]->value;
-            }
-            $display_date->free_result();
-
-            //Body HTML
-            $body_content = $this->data_model->get_content_blocks($content_id, "content");
-
-            if ($body_content->num_rows() > 0) {
-                $body_content_row = $body_content->result();
-                $post_content = $body_content_row[0]->value;
-            }
-            $body_content->free_result();
+            //echo "<PRE>", print_r($article_content_row);
+            //echo "<li><strong>Heading</strong>".$article_heading."</li>";
+            //echo "<li><strong>Content</strong>".$article_content."</li>";
+            //echo $this->db->last_query();
 
             //Create this as a wordpress post
-            $this->data_model->create_wp_post($post_title, $post_content, $post_date);
+            $this->data_model->create_wp_post($article_heading, $article_content, $post_date, $post_name);
+
         }
 
         echo "</ul>";
 
-        echo "<h3>Completed import</h3>";
-
-        //$this->load->view('welcome_message');
+        echo "<h3>Completed news articles import</h3>";
     }
+
+
 
     function events()
     {
@@ -102,12 +105,13 @@ class Migrate extends CI_Controller
 
         //log_message("debug", $this->db->last_query());
 
-        log_message("debug", "Found " . $events->num_rows() . " Events ");
+        echo "<li>Found " . $events->num_rows() . " Events </li>";
 
-        // the main record we need the latest version only
         foreach ($events->result() as $row) {
 
             $title = $row->title;
+
+            //echo "<PRE>", print_r($row);
 
             echo "<li>Creating event: '" . $title . "</li>";
 
@@ -121,6 +125,51 @@ class Migrate extends CI_Controller
         echo "<h3>Completed import</h3>";
 
         //$this->load->view('welcome_message');
+    }
+
+
+    function fix_event_slugs()
+    {
+        $this->load->model("data_model");
+        $events = $this->data_model->get_unique_wp_posts();
+
+        foreach ($events->result() as $row) {
+
+            echo "<br>POST NAME : " . $row->post_name;
+
+            //check for duplicates
+            $duplicates = $this->data_model->fetch_duplicates($row->post_name, $row->id);
+
+            $count =1;
+            foreach ($duplicates->result() as $dup_row) {
+
+                echo "<br>-----DUPLICATE : " . $dup_row->post_name;
+
+                //echo "<PRE>", print_r($dup_row); exit;
+
+                $new_post_name = $dup_row->post_name . "-" . $count;
+                echo "<br>----- RENAMED TO : " . $new_post_name;
+
+                $this->data_model->update_post_name($new_post_name, $dup_row->ID);
+
+                $count++;
+            }
+        }
+
+/*
+        //see if this slug exists already
+        $post_name = url_title($title, "-", TRUE);
+
+        $WPDB->where("post_name", $post_name);
+        $result = $WPDB->get("posts");
+
+        $numfound = $result->num_rows();
+
+        if ($numfound == 0) {
+            return $post_name;
+        } else {*/
+
+
     }
 
 
